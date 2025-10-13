@@ -119,12 +119,14 @@
       
       // ===== 동적 폰트 크기 계산 =====
       // 화면 방향과 텍스트 길이에 따라 폰트 크기 조정
-      let fontSize = isVertical ? shortSide * 0.5 : shortSide / inputText.length;
+      let fontSize = isVertical ? shortSide * 0.6 : shortSide / inputText.length;
       
       // 세로 모드에서 텍스트가 화면을 벗어나면 크기 축소
-      if(isVertical && shortSide * 0.5 * inputText.length > longSide) {
+      if(isVertical && shortSide * 0.6 * inputText.length > longSide) {
         fontSize = longSide / inputText.length;
       }
+
+      fontSize *= 0.9;
       
       ctx.font = `700 ${fontSize}px 'Hahmlet', serif`;
       ctx.fillStyle = 'white';
