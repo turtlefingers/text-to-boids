@@ -128,7 +128,7 @@
       fontSize *= 0.9;
 
       // 스케일 팩터 계산
-      scaleFactor = 700 / fontSize / window.devicePixelRatio;
+      scaleFactor = fontSize / 150 / window.devicePixelRatio;
 
       
       canvasContext.font = `700 ${fontSize}px 'Hahmlet', serif`;
