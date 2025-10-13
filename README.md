@@ -235,7 +235,7 @@ http://localhost:8000/?word=원하는단어
 - 원하는 텍스트를 입력하고 "적용" 버튼 클릭 또는 Enter 키
 
 #### 방법 3: 코드 수정 (기본값 변경)
-`main-pixi.js`의 `getWordFromURL()` 함수에서 기본값을 수정하세요:
+`main.js`의 `getWordFromURL()` 함수에서 기본값을 수정하세요:
 
 ```javascript
 function getWordFromURL() {
@@ -247,28 +247,28 @@ function getWordFromURL() {
 
 ### Boid 행동 파라미터 조정
 
-`boid-pixi.js`에서 다양한 파라미터를 조정할 수 있습니다:
+`boid.js`에서 다양한 파라미터를 조정할 수 있습니다:
 
 ```javascript
 // Boid 생성자
-this.maxspeed = 3 * 1.5;      // 최대 속도
-this.maxforce = 0.05 * 1.5;   // 최대 힘 (조향력)
-this.maxDistance = 2 * m;      // 트레일 포인트 간 최대 거리
+this.maxSpeed = 3 * 1.5;                      // 최대 속도
+this.maxForce = 0.05 * 1.5;                   // 최대 힘 (조향력)
+this.maxTrailDistance = 2 * scaleFactor;      // 트레일 포인트 간 최대 거리
 
 // flock() 메서드
 const desiredSeparation = 25.0;  // 분리 거리
 const neighborDist = 50;         // 이웃 인식 거리
 
 // avoidTouch() 메서드
-const avoidRadius = 150;  // 터치 회피 반경
+const avoidRadius = 150;         // 터치 회피 반경
 ```
 
 ### Boid 밀도 조정
 
-`main-pixi.js`의 128번째 줄에서 그리드 간격을 변경할 수 있습니다:
+`main.js`의 `createBoidsFromText()` 함수에서 그리드 간격을 변경할 수 있습니다:
 
 ```javascript
-const gap = 10 * m;  // 작을수록 Boid가 많아짐
+const gridGap = 10 * scaleFactor;  // 작을수록 Boid가 많아짐
 ```
 
 ## 🧪 알고리즘 설명

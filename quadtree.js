@@ -5,16 +5,16 @@
 class Rectangle {
   /**
    * 생성자
-   * @param {number} x - 중심 X 좌표
-   * @param {number} y - 중심 Y 좌표
-   * @param {number} w - 반너비 (중심에서 가장자리까지의 거리)
-   * @param {number} h - 반높이 (중심에서 가장자리까지의 거리)
+   * @param {number} centerX - 중심 X 좌표
+   * @param {number} centerY - 중심 Y 좌표
+   * @param {number} halfWidth - 반너비 (중심에서 가장자리까지의 거리)
+   * @param {number} halfHeight - 반높이 (중심에서 가장자리까지의 거리)
    */
-  constructor(x, y, w, h) {
-    this.x = x; // 중심 X 좌표
-    this.y = y; // 중심 Y 좌표
-    this.w = w; // 반너비
-    this.h = h; // 반높이
+  constructor(centerX, centerY, halfWidth, halfHeight) {
+    this.x = centerX;         // 중심 X 좌표
+    this.y = centerY;         // 중심 Y 좌표
+    this.w = halfWidth;       // 반너비
+    this.h = halfHeight;      // 반높이
   }
 
   /**
@@ -79,26 +79,26 @@ class QuadTree {
    * 북서, 북동, 남서, 남동 순으로 생성
    */
   subdivide() {
-    const x = this.boundary.x;
-    const y = this.boundary.y;
-    const w = this.boundary.w / 2;  // 반너비를 다시 반으로
-    const h = this.boundary.h / 2;  // 반높이를 다시 반으로
+    const centerX = this.boundary.x;
+    const centerY = this.boundary.y;
+    const halfWidth = this.boundary.w / 2;    // 반너비를 다시 반으로
+    const halfHeight = this.boundary.h / 2;   // 반높이를 다시 반으로
 
     // 북동(우상단) 사분면
-    const ne = new Rectangle(x + w, y - h, w, h);
-    this.northeast = new QuadTree(ne, this.capacity);
+    const northeastBoundary = new Rectangle(centerX + halfWidth, centerY - halfHeight, halfWidth, halfHeight);
+    this.northeast = new QuadTree(northeastBoundary, this.capacity);
 
     // 북서(좌상단) 사분면
-    const nw = new Rectangle(x - w, y - h, w, h);
-    this.northwest = new QuadTree(nw, this.capacity);
+    const northwestBoundary = new Rectangle(centerX - halfWidth, centerY - halfHeight, halfWidth, halfHeight);
+    this.northwest = new QuadTree(northwestBoundary, this.capacity);
 
     // 남동(우하단) 사분면
-    const se = new Rectangle(x + w, y + h, w, h);
-    this.southeast = new QuadTree(se, this.capacity);
+    const southeastBoundary = new Rectangle(centerX + halfWidth, centerY + halfHeight, halfWidth, halfHeight);
+    this.southeast = new QuadTree(southeastBoundary, this.capacity);
 
     // 남서(좌하단) 사분면
-    const sw = new Rectangle(x - w, y + h, w, h);
-    this.southwest = new QuadTree(sw, this.capacity);
+    const southwestBoundary = new Rectangle(centerX - halfWidth, centerY + halfHeight, halfWidth, halfHeight);
+    this.southwest = new QuadTree(southwestBoundary, this.capacity);
 
     this.divided = true;
   }
@@ -137,85 +137,85 @@ class QuadTree {
   /**
    * 주어진 범위 내의 모든 포인트 검색
    * @param {Rectangle} range - 검색할 영역
-   * @param {Array} found - 찾은 포인트들을 저장할 배열 (재귀 호출용)
+   * @param {Array} foundPoints - 찾은 포인트들을 저장할 배열 (재귀 호출용)
    * @returns {Array} 찾은 포인트들의 배열
    */
-  query(range, found) {
-    if (!found) {
-      found = [];
+  query(range, foundPoints) {
+    if (!foundPoints) {
+      foundPoints = [];
     }
 
     // 검색 영역과 겹치지 않으면 탐색 중단
     if (!this.boundary.intersects(range)) {
-      return found;
+      return foundPoints;
     }
 
     // 현재 노드의 포인트들 중 범위 내에 있는 것들 추가
-    for (let p of this.points) {
-      if (range.contains(p)) {
-        found.push(p);
+    for (let point of this.points) {
+      if (range.contains(point)) {
+        foundPoints.push(point);
       }
     }
 
     // 분할되어 있으면 자식들도 재귀적으로 검색
     if (this.divided) {
-      this.northeast.query(range, found);
-      this.northwest.query(range, found);
-      this.southeast.query(range, found);
-      this.southwest.query(range, found);
+      this.northeast.query(range, foundPoints);
+      this.northwest.query(range, foundPoints);
+      this.southeast.query(range, foundPoints);
+      this.southwest.query(range, foundPoints);
     }
 
-    return found;
+    return foundPoints;
   }
 
   /**
    * 원형 반경 내의 모든 포인트 검색 (Flocking에 최적화)
-   * @param {Object} point - 중심점 (position 속성 필요)
-   * @param {number} radius - 검색 반경
-   * @param {Array} found - 찾은 포인트들을 저장할 배열 (재귀 호출용)
+   * @param {Object} centerPoint - 중심점 (position 속성 필요)
+   * @param {number} searchRadius - 검색 반경
+   * @param {Array} foundPoints - 찾은 포인트들을 저장할 배열 (재귀 호출용)
    * @returns {Array} 찾은 포인트들의 배열
    */
-  queryRadius(point, radius, found) {
-    if (!found) {
-      found = [];
+  queryRadius(centerPoint, searchRadius, foundPoints) {
+    if (!foundPoints) {
+      foundPoints = [];
     }
 
     // 빠른 필터링을 위한 사각형 범위 생성
     const range = new Rectangle(
-      point.position.x,
-      point.position.y,
-      radius,
-      radius
+      centerPoint.position.x,
+      centerPoint.position.y,
+      searchRadius,
+      searchRadius
     );
 
     // 사각형 범위와 겹치지 않으면 탐색 중단
     if (!this.boundary.intersects(range)) {
-      return found;
+      return foundPoints;
     }
 
-    const radiusSq = radius * radius;  // 성능 최적화: 제곱 거리 사용
+    const radiusSquared = searchRadius * searchRadius;  // 성능 최적화: 제곱 거리 사용
     
     // 현재 노드의 포인트들 중 원형 반경 내에 있는 것들만 추가
-    for (let p of this.points) {
-      const dx = p.position.x - point.position.x;
-      const dy = p.position.y - point.position.y;
-      const distSq = dx * dx + dy * dy;
+    for (let point of this.points) {
+      const deltaX = point.position.x - centerPoint.position.x;
+      const deltaY = point.position.y - centerPoint.position.y;
+      const distanceSquared = deltaX * deltaX + deltaY * deltaY;
       
       // 원형 반경 내에 있고, 자기 자신이 아닌 경우만 추가
-      if (distSq <= radiusSq && distSq > 0) {
-        found.push(p);
+      if (distanceSquared <= radiusSquared && distanceSquared > 0) {
+        foundPoints.push(point);
       }
     }
 
     // 분할되어 있으면 자식들도 재귀적으로 검색
     if (this.divided) {
-      this.northeast.queryRadius(point, radius, found);
-      this.northwest.queryRadius(point, radius, found);
-      this.southeast.queryRadius(point, radius, found);
-      this.southwest.queryRadius(point, radius, found);
+      this.northeast.queryRadius(centerPoint, searchRadius, foundPoints);
+      this.northwest.queryRadius(centerPoint, searchRadius, foundPoints);
+      this.southeast.queryRadius(centerPoint, searchRadius, foundPoints);
+      this.southwest.queryRadius(centerPoint, searchRadius, foundPoints);
     }
 
-    return found;
+    return foundPoints;
   }
 
   /**

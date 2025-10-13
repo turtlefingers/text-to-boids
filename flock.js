@@ -27,9 +27,9 @@ class Flock {
    * @param {number} height - 화면 높이
    * @param {number} frameCount - 현재 프레임 번호
    * @param {SimplexNoise} simplex - Simplex Noise 생성기
-   * @param {Object} touchPos - 터치 위치 {x, y} 또는 null
+   * @param {Object} touchPosition - 터치 위치 {x, y} 또는 null
    */
-  run(width, height, frameCount, simplex, touchPos) {
+  run(width, height, frameCount, simplex, touchPosition) {
     // ===== 1단계: QuadTree 구축 =====
     // 매 프레임마다 QuadTree를 재구성하여 최신 위치 정보 반영
     const boundary = new Rectangle(width / 2, height / 2, width / 2, height / 2);
@@ -57,7 +57,7 @@ class Flock {
       const neighbors = this.quadtree.queryRadius(boid, searchRadius);
 
       // Boid 업데이트 (Flocking, 터치 회피, 물리 시뮬레이션)
-      boid.run(neighbors, width, height, frameCount, simplex, touchPos);
+      boid.run(neighbors, width, height, frameCount, simplex, touchPosition);
     }
     
     // ===== 3단계: Z-order 업데이트 (필요한 경우만) =====

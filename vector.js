@@ -24,48 +24,48 @@ class Vector {
   }
 
   /**
-   * 두 벡터의 차를 계산 (v1 - v2)
-   * @param {Vector} v1 - 첫 번째 벡터
-   * @param {Vector} v2 - 두 번째 벡터
+   * 두 벡터의 차를 계산 (vector1 - vector2)
+   * @param {Vector} vector1 - 첫 번째 벡터
+   * @param {Vector} vector2 - 두 번째 벡터
    * @returns {Vector} 두 벡터의 차
    */
-  static sub(v1, v2) {
-    return new Vector(v1.x - v2.x, v1.y - v2.y);
+  static sub(vector1, vector2) {
+    return new Vector(vector1.x - vector2.x, vector1.y - vector2.y);
   }
 
   /**
-   * 두 벡터의 합을 계산 (v1 + v2)
-   * @param {Vector} v1 - 첫 번째 벡터
-   * @param {Vector} v2 - 두 번째 벡터
+   * 두 벡터의 합을 계산 (vector1 + vector2)
+   * @param {Vector} vector1 - 첫 번째 벡터
+   * @param {Vector} vector2 - 두 번째 벡터
    * @returns {Vector} 두 벡터의 합
    */
-  static add(v1, v2) {
-    return new Vector(v1.x + v2.x, v1.y + v2.y);
+  static add(vector1, vector2) {
+    return new Vector(vector1.x + vector2.x, vector1.y + vector2.y);
   }
 
   /**
    * 두 벡터 사이의 거리 계산
-   * @param {Vector} v1 - 첫 번째 벡터
-   * @param {Vector} v2 - 두 번째 벡터
+   * @param {Vector} vector1 - 첫 번째 벡터
+   * @param {Vector} vector2 - 두 번째 벡터
    * @returns {number} 두 벡터 사이의 거리
    */
-  static dist(v1, v2) {
-    const dx = v1.x - v2.x;
-    const dy = v1.y - v2.y;
-    return Math.sqrt(dx * dx + dy * dy);
+  static dist(vector1, vector2) {
+    const deltaX = vector1.x - vector2.x;
+    const deltaY = vector1.y - vector2.y;
+    return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
   }
 
   /**
    * 두 벡터 사이의 거리 제곱 계산 (성능 최적화용)
    * Math.sqrt() 연산을 생략하여 빠른 거리 비교 가능
-   * @param {Vector} v1 - 첫 번째 벡터
-   * @param {Vector} v2 - 두 번째 벡터
+   * @param {Vector} vector1 - 첫 번째 벡터
+   * @param {Vector} vector2 - 두 번째 벡터
    * @returns {number} 두 벡터 사이의 거리 제곱
    */
-  static distSq(v1, v2) {
-    const dx = v1.x - v2.x;
-    const dy = v1.y - v2.y;
-    return dx * dx + dy * dy;
+  static distSq(vector1, vector2) {
+    const deltaX = vector1.x - vector2.x;
+    const deltaY = vector1.y - vector2.y;
+    return deltaX * deltaX + deltaY * deltaY;
   }
 
   /**
@@ -95,46 +95,46 @@ class Vector {
 
   /**
    * 벡터 덧셈 (자기 자신을 수정)
-   * @param {Vector} v - 더할 벡터
+   * @param {Vector} vector - 더할 벡터
    * @returns {Vector} 메서드 체이닝을 위해 자기 자신 반환
    */
-  add(v) {
-    this.x += v.x;
-    this.y += v.y;
+  add(vector) {
+    this.x += vector.x;
+    this.y += vector.y;
     return this;
   }
 
   /**
    * 벡터 뺄셈 (자기 자신을 수정)
-   * @param {Vector} v - 뺄 벡터
+   * @param {Vector} vector - 뺄 벡터
    * @returns {Vector} 메서드 체이닝을 위해 자기 자신 반환
    */
-  sub(v) {
-    this.x -= v.x;
-    this.y -= v.y;
+  sub(vector) {
+    this.x -= vector.x;
+    this.y -= vector.y;
     return this;
   }
 
   /**
    * 스칼라 곱셈 (자기 자신을 수정)
-   * @param {number} n - 곱할 스칼라 값
+   * @param {number} scalar - 곱할 스칼라 값
    * @returns {Vector} 메서드 체이닝을 위해 자기 자신 반환
    */
-  mult(n) {
-    this.x *= n;
-    this.y *= n;
+  mult(scalar) {
+    this.x *= scalar;
+    this.y *= scalar;
     return this;
   }
 
   /**
    * 스칼라 나눗셈 (자기 자신을 수정)
-   * @param {number} n - 나눌 스칼라 값
+   * @param {number} scalar - 나눌 스칼라 값
    * @returns {Vector} 메서드 체이닝을 위해 자기 자신 반환
    */
-  div(n) {
-    if (n !== 0) {
-      this.x /= n;
-      this.y /= n;
+  div(scalar) {
+    if (scalar !== 0) {
+      this.x /= scalar;
+      this.y /= scalar;
     }
     return this;
   }
@@ -160,34 +160,34 @@ class Vector {
    * @returns {Vector} 메서드 체이닝을 위해 자기 자신 반환
    */
   normalize() {
-    const m = this.mag();
-    if (m !== 0) {
-      this.div(m);
+    const magnitude = this.mag();
+    if (magnitude !== 0) {
+      this.div(magnitude);
     }
     return this;
   }
 
   /**
    * 벡터의 크기를 특정 값으로 설정
-   * @param {number} n - 설정할 크기
+   * @param {number} newMagnitude - 설정할 크기
    * @returns {Vector} 메서드 체이닝을 위해 자기 자신 반환
    */
-  setMag(n) {
+  setMag(newMagnitude) {
     this.normalize();
-    this.mult(n);
+    this.mult(newMagnitude);
     return this;
   }
 
   /**
    * 벡터의 크기를 최대값으로 제한
-   * @param {number} max - 최대 크기
+   * @param {number} maxMagnitude - 최대 크기
    * @returns {Vector} 메서드 체이닝을 위해 자기 자신 반환
    */
-  limit(max) {
-    const mSq = this.magSq();
-    if (mSq > max * max) {
-      this.div(Math.sqrt(mSq));
-      this.mult(max);
+  limit(maxMagnitude) {
+    const magnitudeSquared = this.magSq();
+    if (magnitudeSquared > maxMagnitude * maxMagnitude) {
+      this.div(Math.sqrt(magnitudeSquared));
+      this.mult(maxMagnitude);
     }
     return this;
   }
@@ -207,18 +207,18 @@ class Vector {
    */
   rotate(angle) {
     const newHeading = this.heading() + angle;
-    const mag = this.mag();
-    this.x = Math.cos(newHeading) * mag;
-    this.y = Math.sin(newHeading) * mag;
+    const magnitude = this.mag();
+    this.x = Math.cos(newHeading) * magnitude;
+    this.y = Math.sin(newHeading) * magnitude;
     return this;
   }
 
   /**
    * 다른 벡터와의 거리 계산
-   * @param {Vector} v - 대상 벡터
+   * @param {Vector} vector - 대상 벡터
    * @returns {number} 거리
    */
-  dist(v) {
-    return Vector.dist(this, v);
+  dist(vector) {
+    return Vector.dist(this, vector);
   }
 }

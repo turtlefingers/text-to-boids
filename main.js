@@ -15,7 +15,7 @@
 // IIFE (즉시 실행 함수)로 전역 스코프 오염 방지
 (async function() {
   try {
-    console.log('Starting application...');
+    console.log('애플리케이션 시작...');
     
     // ==================== 설정 ====================
     const resolution = 40;  // 미사용 (추후 확장용)
@@ -35,7 +35,7 @@
     ];
     
     // ==================== PixiJS 애플리케이션 생성 ====================
-    console.log('Creating PIXI app...');
+    console.log('PixiJS 앱 생성 중...');
     const app = new PIXI.Application({
       width: window.innerWidth,
       height: window.innerHeight,
@@ -47,15 +47,14 @@
 
     // Canvas를 DOM에 추가
     document.getElementById('canvas-container').appendChild(app.view);
-    console.log('Canvas added to DOM');
+    console.log('Canvas가 DOM에 추가됨');
 
     // ==================== 화면 방향 및 크기 계산 ====================
     const isVertical = window.innerWidth < window.innerHeight;  // 세로 모드 여부
     const shortSide = isVertical ? window.innerWidth : window.innerHeight;
     const longSide = isVertical ? window.innerHeight : window.innerWidth;
+    let scaleFactor;
 
-    // 스케일 팩터 계산 (다양한 화면 크기 대응)
-    const m = 1600 / shortSide / window.devicePixelRatio;
 
     // ==================== PixiJS 컨테이너 설정 ====================
     // 모든 Boid를 담을 단일 컨테이너 (Z-index 정렬 사용)
@@ -80,22 +79,22 @@
     let currentMouseY = -1000;
 
     // ==================== Simplex Noise 초기화 ====================
-    console.log('Initializing noise...');
+    console.log('Noise 초기화 중...');
     const simplex = typeof SimplexNoise !== 'undefined' ? new SimplexNoise() : null;
     if (!simplex) {
-      console.warn('SimplexNoise not available, using Math.random()');
+      console.warn('SimplexNoise를 사용할 수 없습니다. Math.random() 사용');
     }
 
     // ==================== 폰트 로딩 ====================
-    console.log('Loading fonts...');
+    console.log('폰트 로딩 중...');
     
     try {
       await document.fonts.ready;
       // Hahmlet 폰트 강제 로드
       await document.fonts.load('900 1em Hahmlet');
-      console.log('Fonts loaded');
+      console.log('폰트 로딩 완료');
     } catch(e) {
-      console.warn('Font loading issue:', e);
+      console.warn('폰트 로딩 오류:', e);
     }
     
     // 폰트 렌더링 안정화를 위한 대기
@@ -105,7 +104,7 @@
     const textCanvas = document.createElement('canvas');
     textCanvas.width = app.screen.width;
     textCanvas.height = app.screen.height;
-    const ctx = textCanvas.getContext('2d');
+    const canvasContext = textCanvas.getContext('2d');
 
     /**
      * 텍스트를 Canvas에 렌더링하고 이미지 데이터 반환
@@ -114,8 +113,8 @@
      */
     function renderTextToCanvas(inputText) {
       // Canvas 초기화 (검은 배경)
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, textCanvas.width, textCanvas.height);
+      canvasContext.fillStyle = 'black';
+      canvasContext.fillRect(0, 0, textCanvas.width, textCanvas.height);
       
       // ===== 동적 폰트 크기 계산 =====
       // 화면 방향과 텍스트 길이에 따라 폰트 크기 조정
@@ -127,11 +126,15 @@
       }
 
       fontSize *= 0.9;
+
+      // 스케일 팩터 계산
+      scaleFactor = 700 / fontSize / window.devicePixelRatio;
+
       
-      ctx.font = `700 ${fontSize}px 'Hahmlet', serif`;
-      ctx.fillStyle = 'white';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      canvasContext.font = `700 ${fontSize}px 'Hahmlet', serif`;
+      canvasContext.fillStyle = 'white';
+      canvasContext.textAlign = 'center';
+      canvasContext.textBaseline = 'middle';
       
       // ===== 텍스트를 세로로 배치 =====
       // 각 문자 사이에 줄바꿈 추가 (세로 배치)
@@ -141,11 +144,11 @@
       const startY = app.screen.height / 2 - (lines.length - 1) * lineHeight / 2;
       
       // 각 줄(문자) 렌더링
-      lines.forEach((line, i) => {
-        ctx.fillText(line, textCanvas.width / 2, startY + i * lineHeight);
+      lines.forEach((line, lineIndex) => {
+        canvasContext.fillText(line, textCanvas.width / 2, startY + lineIndex * lineHeight);
       });
       
-      return ctx.getImageData(0, 0, textCanvas.width, textCanvas.height);
+      return canvasContext.getImageData(0, 0, textCanvas.width, textCanvas.height);
     }
 
     /**
@@ -156,11 +159,11 @@
      * @returns {boolean} 밝으면 true
      */
     function isBright(imageData, x, y) {
-      const idx = (Math.floor(y) * textCanvas.width + Math.floor(x)) * 4;
-      const r = imageData.data[idx];
-      const g = imageData.data[idx + 1];
-      const b = imageData.data[idx + 2];
-      const brightness = (r + g + b) / 3;
+      const pixelIndex = (Math.floor(y) * textCanvas.width + Math.floor(x)) * 4;
+      const red = imageData.data[pixelIndex];
+      const green = imageData.data[pixelIndex + 1];
+      const blue = imageData.data[pixelIndex + 2];
+      const brightness = (red + green + blue) / 3;
       return brightness > 0;  // 검은색(0)이 아니면 true
     }
 
@@ -190,7 +193,7 @@
      * @param {string} inputText - 입력 텍스트
      */
     function createBoidsFromText(inputText) {
-      console.log('Creating boids from text:', inputText);
+      console.log(`텍스트로부터 Boid 생성: "${inputText}"`);
       
       // 기존 Boid 제거
       flock.clear();
@@ -199,18 +202,18 @@
       const imageData = renderTextToCanvas(inputText);
       
       // ===== Boid 생성 =====
-      const gap = 10 * m;  // 그리드 간격
+      const gridGap = 10 * scaleFactor;  // 그리드 간격
       gridTriangle((x, y) => {
         // 화면 범위 내이고, 밝은 픽셀(텍스트 영역)에만 Boid 생성
         if (x >= 0 && x < textCanvas.width && y >= 0 && y < textCanvas.height) {
           if (isBright(imageData, x, y)) {
-            const boid = new Boid(x, y, m, palette);
+            const boid = new Boid(x, y, scaleFactor, palette);
             flock.addBoid(boid);
           }
         }
-      }, gap);
+      }, gridGap);
       
-      console.log(`Created ${flock.boids.length} boids`);
+      console.log(`${flock.boids.length}개의 Boid 생성 완료`);
     }
 
     /**
@@ -247,8 +250,8 @@
     }
 
     // ==================== 인터랙션 변수 ====================
-    let isMouseDown = false;  // 마우스/터치 다운 상태
-    let touchPos = null;      // 현재 터치 위치
+    let isMousePressed = false;  // 마우스/터치 다운 상태
+    let touchPosition = null;     // 현재 터치 위치
 
     // ==================== 입력 컨트롤 ====================
     const textInput = document.getElementById('text-input');
@@ -284,8 +287,8 @@
     // ===== UI 컨테이너 인터랙션 =====
     // UI 위에서는 Boid 인터랙션 비활성화
     inputContainer.addEventListener('mouseenter', () => {
-      isMouseDown = false;
-      touchPos = null;
+      isMousePressed = false;
+      touchPosition = null;
     });
 
     // UI 위에서도 마우스 위치 추적 (UI 표시용)
@@ -299,17 +302,17 @@
     
     // 마우스 다운
     app.view.addEventListener('mousedown', (e) => {
-      isMouseDown = true;
+      isMousePressed = true;
       const rect = app.view.getBoundingClientRect();
       const mouseX = (e.clientX - rect.left) * (app.screen.width / rect.width);
       const mouseY = (e.clientY - rect.top) * (app.screen.height / rect.height);
-      touchPos = { x: mouseX, y: mouseY };
+      touchPosition = { x: mouseX, y: mouseY };
     });
     
     // 마우스 업
     app.view.addEventListener('mouseup', () => {
-      isMouseDown = false;
-      touchPos = null;
+      isMousePressed = false;
+      touchPosition = null;
     });
     
     // 마우스 이동
@@ -323,8 +326,8 @@
       currentMouseY = mouseY;
       
       // 마우스 다운 상태이면 터치 위치 업데이트
-      if (isMouseDown) {
-        touchPos = { x: mouseX, y: mouseY };
+      if (isMousePressed) {
+        touchPosition = { x: mouseX, y: mouseY };
       }
     });
 
@@ -337,22 +340,22 @@
     // ==================== 터치 이벤트 (모바일) ====================
     
     app.view.addEventListener('touchstart', (e) => {
-      isMouseDown = true;
+      isMousePressed = true;
       if (e.touches.length > 0) {
         const rect = app.view.getBoundingClientRect();
         const touch = e.touches[0];
-        const mouseX = (touch.clientX - rect.left) * (app.screen.width / rect.width);
-        const mouseY = (touch.clientY - rect.top) * (app.screen.height / rect.height);
-        currentMouseX = mouseX;
-        currentMouseY = mouseY;
-        touchPos = { x: mouseX, y: mouseY };
+        const touchX = (touch.clientX - rect.left) * (app.screen.width / rect.width);
+        const touchY = (touch.clientY - rect.top) * (app.screen.height / rect.height);
+        currentMouseX = touchX;
+        currentMouseY = touchY;
+        touchPosition = { x: touchX, y: touchY };
       }
       e.preventDefault();  // 기본 터치 동작 방지
     });
     
     app.view.addEventListener('touchend', () => {
-      isMouseDown = false;
-      touchPos = null;
+      isMousePressed = false;
+      touchPosition = null;
       currentMouseX = -1000;
       currentMouseY = -1000;
     });
@@ -361,20 +364,20 @@
       if (e.touches.length > 0) {
         const rect = app.view.getBoundingClientRect();
         const touch = e.touches[0];
-        const mouseX = (touch.clientX - rect.left) * (app.screen.width / rect.width);
-        const mouseY = (touch.clientY - rect.top) * (app.screen.height / rect.height);
-        currentMouseX = mouseX;
-        currentMouseY = mouseY;
+        const touchX = (touch.clientX - rect.left) * (app.screen.width / rect.width);
+        const touchY = (touch.clientY - rect.top) * (app.screen.height / rect.height);
+        currentMouseX = touchX;
+        currentMouseY = touchY;
         
-        if (isMouseDown) {
-          touchPos = { x: mouseX, y: mouseY };
+        if (isMousePressed) {
+          touchPosition = { x: touchX, y: touchY };
         }
         e.preventDefault();
       }
     });
 
     // ==================== 애니메이션 루프 ====================
-    console.log('Starting animation loop...');
+    console.log('애니메이션 루프 시작...');
     let frameCount = 0;
     let lastUpdateTime = performance.now();
     const targetFrameTime = 1000 / 60; // 60 FPS 목표
@@ -415,12 +418,12 @@
         frameCount++;
         
         // 마우스 다운 상태이면 터치 처리
-        if (isMouseDown && touchPos) {
-          flock.handleTouch(touchPos.x, touchPos.y);
+        if (isMousePressed && touchPosition) {
+          flock.handleTouch(touchPosition.x, touchPosition.y);
         }
         
         // Flock 업데이트 (모든 Boid 업데이트 및 렌더링)
-        flock.run(app.screen.width, app.screen.height, frameCount, simplex, touchPos);
+        flock.run(app.screen.width, app.screen.height, frameCount, simplex, touchPosition);
         accumulator -= targetFrameTime;
       }
     });
@@ -438,11 +441,11 @@
       createBoidsFromText(word);
     });
 
-    console.log('Application started successfully!');
+    console.log('애플리케이션이 성공적으로 시작되었습니다!');
 
   } catch (error) {
     // 에러 발생 시 콘솔에 상세 정보 출력
-    console.error('Error initializing application:', error);
-    console.error('Stack trace:', error.stack);
+    console.error('애플리케이션 초기화 오류:', error);
+    console.error('스택 추적:', error.stack);
   }
 })();

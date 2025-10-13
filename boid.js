@@ -17,27 +17,26 @@ class Boid {
    * 생성자
    * @param {number} x - 초기 X 위치
    * @param {number} y - 초기 Y 위치
-   * @param {number} m - 스케일 팩터 (화면 크기에 따라 조정)
+   * @param {number} scaleFactor - 스케일 팩터 (화면 크기에 따라 조정)
    * @param {Array} palette - 색상 팔레트 배열
    */
-  constructor(x, y, m, palette) {
+  constructor(x, y, scaleFactor, palette) {
     // ===== 물리 속성 =====
     this.acceleration = new Vector(0, 0);                           // 가속도
     this.velocity = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1); // 초기 속도 (랜덤)
     this.position = new Vector(x, y);                               // 현재 위치
     
     // ===== 트레일(꼬리) 효과를 위한 포인트 =====
-    this.points = [];
+    this.trailPoints = [];
     for(let i = 0; i < 5; i++) {
-      this.points.push(this.position.copy()); // 5개의 포인트로 부드러운 트레일 생성
+      this.trailPoints.push(this.position.copy()); // 5개의 포인트로 부드러운 트레일 생성
     }
     
     // ===== 이동 관련 파라미터 =====
-    this.r = 3.0;                    // 반경 (현재 미사용)
-    this.maxspeed = 3 * 1.5;         // 최대 속도
-    this.baseMaxspeed = 3 * 1.5;     // 기본 최대 속도 (터치 회피 시 증가)
-    this.maxforce = 0.05 * 1.5;      // 최대 조향력
-    this.maxDistance = 2 * m;        // 트레일 포인트 간 최대 거리
+    this.maxSpeed = 3 * 1.5;          // 최대 속도
+    this.baseMaxSpeed = 3 * 1.5;      // 기본 최대 속도 (터치 회피 시 증가)
+    this.maxForce = 0.05 * 1.5;       // 최대 조향력
+    this.maxTrailDistance = 2 * scaleFactor;  // 트레일 포인트 간 최대 거리
     
     // ===== 색상 관리 =====
     // 초기에는 회색으로 시작 (고정 상태)
@@ -53,7 +52,7 @@ class Boid {
     // ===== 고정/자유 상태 =====
     this.isFixed = true;              // 초기에는 텍스트 형태를 유지 (고정 상태)
     this.fixedPoint = this.position.copy(); // 고정점 (원래 위치)
-    this.m = m;                       // 스케일 팩터 저장
+    this.scaleFactor = scaleFactor;   // 스케일 팩터 저장
     this.palette = palette;           // 팔레트 저장
     
     // ===== PixiJS 그래픽 객체 =====
@@ -112,16 +111,16 @@ class Boid {
    * @param {number} height - 화면 높이
    * @param {number} frameCount - 현재 프레임 번호
    * @param {SimplexNoise} simplex - Noise 생성기
-   * @param {Object} touchPos - 터치 위치 또는 null
+   * @param {Object} touchPosition - 터치 위치 또는 null
    */
-  run(neighbors, width, height, frameCount, simplex, touchPos) {
+  run(neighbors, width, height, frameCount, simplex, touchPosition) {
     // ===== 터치 회피 =====
-    if (touchPos) {
-      const avoidForce = this.avoidTouch(touchPos, simplex, frameCount);
+    if (touchPosition) {
+      const avoidForce = this.avoidTouch(touchPosition, simplex, frameCount);
       this.applyForce(avoidForce);
     } else {
       // 터치가 없을 때는 속도 리셋
-      this.maxspeed = this.baseMaxspeed;
+      this.maxSpeed = this.baseMaxSpeed;
     }
     
     // ===== 고정/자유 상태에 따른 행동 =====
@@ -234,9 +233,9 @@ class Boid {
       const sepMag = sepSteer.mag();
       if (sepMag > 0) {
         sepSteer.normalize();           // 방향 벡터화
-        sepSteer.mult(this.maxspeed);   // 원하는 속도로 스케일
+        sepSteer.mult(this.maxSpeed);   // 원하는 속도로 스케일
         sepSteer.sub(this.velocity);    // 조향력 = 원하는 속도 - 현재 속도
-        sepSteer.limit(this.maxforce);  // 최대 힘 제한
+        sepSteer.limit(this.maxForce);  // 최대 힘 제한
         sepSteer.mult(1.5);             // 분리 강도 증폭 (충돌 방지 우선)
         this.applyForce(sepSteer);
       }
@@ -246,9 +245,9 @@ class Boid {
     if (aliCount > 0) {
       aliSum.div(aliCount);             // 평균 속도 계산
       aliSum.normalize();
-      aliSum.mult(this.maxspeed);
+      aliSum.mult(this.maxSpeed);
       aliSum.sub(this.velocity);
-      aliSum.limit(this.maxforce);
+      aliSum.limit(this.maxForce);
       this.applyForce(aliSum);
     }
     
@@ -268,9 +267,9 @@ class Boid {
     target.x -= this.position.x;        // 목표까지의 방향 벡터
     target.y -= this.position.y;
     target.normalize();                 // 정규화
-    target.mult(this.maxspeed);         // 원하는 속도
+    target.mult(this.maxSpeed);         // 원하는 속도
     target.sub(this.velocity);          // 조향력
-    target.limit(this.maxforce);        // 최대 힘 제한
+    target.limit(this.maxForce);        // 최대 힘 제한
   }
 
   /**
@@ -281,9 +280,9 @@ class Boid {
   seek(target) {
     const desired = Vector.sub(target, this.position);
     desired.normalize();
-    desired.mult(this.maxspeed);
+    desired.mult(this.maxSpeed);
     const steer = Vector.sub(desired, this.velocity);
-    steer.limit(this.maxforce);
+    steer.limit(this.maxForce);
     return steer;
   }
 
@@ -309,7 +308,7 @@ class Boid {
       const strength = (avoidRadius - dist) / avoidRadius;
       
       // 터치 근처에서 속도 증가 (최대 4배)
-      this.maxspeed = this.baseMaxspeed * (1 + strength * 3);
+      this.maxSpeed = this.baseMaxSpeed * (1 + strength * 3);
       
       // ===== 기본 회피 힘 (50%) =====
       const avoidForce = new Vector(dx / dist, dy / dist);
@@ -359,7 +358,7 @@ class Boid {
     }
     
     // 반경 밖이면 속도 리셋
-    this.maxspeed = this.baseMaxspeed;
+    this.maxSpeed = this.baseMaxSpeed;
     return new Vector(0, 0);
   }
 
@@ -369,20 +368,20 @@ class Boid {
   update() {
     // ===== 기본 물리 =====
     this.velocity.add(this.acceleration);
-    this.velocity.limit(this.maxspeed);
+    this.velocity.limit(this.maxSpeed);
     this.position.add(this.velocity);
     this.acceleration.mult(0);  // 가속도 리셋
 
-    const maxDistSq = this.maxDistance * this.maxDistance;
+    const maxDistSq = this.maxTrailDistance * this.maxTrailDistance;
     
     // ===== 트레일 포인트 업데이트 =====
     // 맨 뒤부터 앞으로 업데이트 (꼬리가 머리를 따라감)
-    for(let i = this.points.length - 1; i > 0; i--) {
-      if(i === this.points.length - 1) {
-        this.points[i].set(this.position);  // 마지막 포인트는 현재 위치
+    for(let i = this.trailPoints.length - 1; i > 0; i--) {
+      if(i === this.trailPoints.length - 1) {
+        this.trailPoints[i].set(this.position);  // 마지막 포인트는 현재 위치
       }
-      const p1 = this.points[i];
-      const p2 = this.points[i - 1];
+      const p1 = this.trailPoints[i];
+      const p2 = this.trailPoints[i - 1];
       const dx = p2.x - p1.x;
       const dy = p2.y - p1.y;
       const distSq = dx * dx + dy * dy;
@@ -390,7 +389,7 @@ class Boid {
       // 포인트 간 거리가 최대 거리를 초과하면 조정
       if(distSq > maxDistSq) {
         const dist = Math.sqrt(distSq);
-        const factor = this.maxDistance / dist;
+        const factor = this.maxTrailDistance / dist;
         p2.x = p1.x + dx * factor;
         p2.y = p1.y + dy * factor;
       }
@@ -399,21 +398,21 @@ class Boid {
     // ===== 고정 Boid의 추가 제약 =====
     if(this.isFixed) {
       // 고정점으로부터의 거리 제한
-      for(let i = 0; i < this.points.length; i++) {
-        const p1 = i === 0 ? this.fixedPoint : this.points[i - 1];
-        const p2 = this.points[i];
+      for(let i = 0; i < this.trailPoints.length; i++) {
+        const p1 = i === 0 ? this.fixedPoint : this.trailPoints[i - 1];
+        const p2 = this.trailPoints[i];
         const dx = p2.x - p1.x;
         const dy = p2.y - p1.y;
         const distSq = dx * dx + dy * dy;
         
         if(distSq > maxDistSq) {
           const dist = Math.sqrt(distSq);
-          const factor = this.maxDistance / dist;
+          const factor = this.maxTrailDistance / dist;
           p2.x = p1.x + dx * factor;
           p2.y = p1.y + dy * factor;
           
           // 마지막 포인트가 조정되면 실제 위치도 업데이트
-          if(i === this.points.length - 1) {
+          if(i === this.trailPoints.length - 1) {
             this.position.set(p2.x, p2.y);
           }
         }
@@ -443,17 +442,17 @@ class Boid {
     
     // 둥근 선 연결 (부드러운 트레일)
     this.graphics.lineStyle({
-      width: 10 * this.m,
+      width: 10 * this.scaleFactor,
       color: color,
       alpha: 1,
       join: PIXI.LINE_JOIN.ROUND
     });
     
     // 트레일 포인트들을 연결하는 선 그리기
-    if (this.points.length > 0) {
-      this.graphics.moveTo(this.points[0].x, this.points[0].y);
-      for(let i = 1; i < this.points.length; i++) {
-        this.graphics.lineTo(this.points[i].x, this.points[i].y);
+    if (this.trailPoints.length > 0) {
+      this.graphics.moveTo(this.trailPoints[0].x, this.trailPoints[0].y);
+      for(let i = 1; i < this.trailPoints.length; i++) {
+        this.graphics.lineTo(this.trailPoints[i].x, this.trailPoints[i].y);
       }
     }
   }
@@ -470,7 +469,7 @@ class Boid {
       this.anchorGraphics.beginFill(0x333333);  // 어두운 회색
       
       // 정육각형 그리기
-      const radius = 5 * this.m;
+      const radius = 5 * this.scaleFactor;
       const points = [];
       for(let i = 0; i < 6; i++) {
         const angle = Math.PI / 3 * i - Math.PI / 2;
@@ -489,7 +488,7 @@ class Boid {
    * 화면 밖으로 나가면 반대편에서 나옴
    */
   borders(width, height) {
-    const d = this.points.length * this.maxDistance;
+    const d = this.trailPoints.length * this.maxTrailDistance;
     if (this.position.x < -d) this.position.x = width + d;
     if (this.position.y < -d) this.position.y = height + d;
     if (this.position.x > width + d) this.position.x = -d;
@@ -505,10 +504,10 @@ class Boid {
   checkTouch(mouseX, mouseY) {
     // 고정 상태이고 터치 위치가 가까우면
     if (this.isFixed && this.position.dist(new Vector(mouseX, mouseY)) < 50) {
-      this.maxDistance += 0.7 * this.m;  // 트레일 거리 증가
+      this.maxTrailDistance += 0.7 * this.scaleFactor;  // 트레일 거리 증가
       
       // 일정 거리 이상 늘어나면 해제
-      if (this.maxDistance > 6 * this.m) {
+      if (this.maxTrailDistance > 6 * this.scaleFactor) {
         this.isFixed = false;
         this.needsZOrderUpdate = true;  // Z-order 업데이트 요청
         return true;
