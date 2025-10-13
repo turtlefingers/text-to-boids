@@ -1,0 +1,165 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* Disable text selection and highlighting */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Disable touch callouts on iOS */
+  -webkit-touch-callout: none;
+  /* Disable tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
+}
+
+canvas {
+  display: block;
+  /* Disable touch actions */
+  touch-action: none;
+  /* Disable context menu */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+* {
+  /* Disable text selection globally */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* UI controls container */
+#text-input-container {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+  font-family: 'Hahmlet', serif;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+#text-input-container.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#text-input-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#text-input {
+  padding: 8px 12px;
+  font-size: 16px;
+  font-family: 'Hahmlet', serif;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  outline: none;
+  width: 120px;
+  transition: all 0.2s ease;
+  /* Enable text selection for input */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+#text-input:focus {
+  background-color: rgba(0, 0, 0, 0.7);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+#text-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+#apply-button {
+  padding: 8px 16px;
+  font-size: 16px;
+  font-family: 'Hahmlet', serif;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  /* Enable interaction for button */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#apply-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+#apply-button:active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+#info-text {
+  font-family: 'Arial', sans-serif;
+  font-size: 20px;
+  color: #ffffff;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+  margin: 0;
+  padding: 0;
+}
+
+/* Welcome message */
+#welcome-message {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-family: 'Hahmlet', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 15px 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 999;
+  opacity: 1;
+  animation: welcomeFade 5s ease-in-out forwards;
+  pointer-events: none;
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+@keyframes welcomeFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}

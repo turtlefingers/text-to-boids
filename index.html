@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Text to Boids</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.3.2/dist/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/4.0.1/simplex-noise.min.js"></script>
+  </head>
+  <body>
+    <div id="canvas-container"></div>
+    <div id="text-input-container">
+      <div id="text-input-controls">
+        <input type="text" id="text-input" placeholder="단어 입력..." maxlength="10" />
+        <button id="apply-button">적용</button>
+      </div>
+      <p id="info-text"></p>
+    </div>
+    <div id="welcome-message">좌측상단에 마우스를 올려 단어를 바꿀수 있습니다.</div>
+    <script src="vector.js"></script>
+    <script src="quadtree.js"></script>
+    <script src="boid.js"></script>
+    <script src="flock.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
