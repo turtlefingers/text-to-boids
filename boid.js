@@ -28,7 +28,7 @@ class Boid {
     
     // ===== 트레일(꼬리) 효과를 위한 포인트 =====
     this.trailPoints = [];
-    for(let i = 0; i < 5; i++) {
+    for(let i = 0; i < 4; i++) {
       this.trailPoints.push(this.position.copy()); // 5개의 포인트로 부드러운 트레일 생성
     }
     
@@ -36,7 +36,7 @@ class Boid {
     this.maxSpeed = 3 * 1.5;          // 최대 속도
     this.baseMaxSpeed = 3 * 1.5;      // 기본 최대 속도 (터치 회피 시 증가)
     this.maxForce = 0.05 * 1.5;       // 최대 조향력
-    this.maxTrailDistance = 2 * scaleFactor;  // 트레일 포인트 간 최대 거리
+    this.maxTrailDistance = 2.5 * scaleFactor;  // 트레일 포인트 간 최대 거리
     
     // ===== 색상 관리 =====
     // 초기에는 회색으로 시작 (고정 상태)
@@ -507,7 +507,7 @@ class Boid {
       this.maxTrailDistance += 0.7 * this.scaleFactor;  // 트레일 거리 증가
       
       // 일정 거리 이상 늘어나면 해제
-      if (this.maxTrailDistance > 6 * this.scaleFactor) {
+      if (this.maxTrailDistance > 8 * this.scaleFactor) {
         this.isFixed = false;
         this.needsZOrderUpdate = true;  // Z-order 업데이트 요청
         return true;
